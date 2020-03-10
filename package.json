@@ -14,7 +14,7 @@
     "tsconfig.json"
   ],
   "keywords": [
-    "guacamole"
+    "guacamole", "guacamole-common-js", "guacamole-client", "guacamole-typescript"
   ],
   "author": "Ashish Patel <ashish.tripleclicks@gmail.com>",
   "license": "Apache-2.0",
