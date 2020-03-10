@@ -1,10 +1,10 @@
-####Guacamole Common JS
+#### Guacamole Common JS
 with Typescript type definitions\
 Guacamole API Version 1.2.0
 
 
 
-####Usage
+#### Usage
 Import required modules in your component.ts file\
 `import { Client, Tunnel } from '@ashishpatel/guacamole-common-js';`
 
