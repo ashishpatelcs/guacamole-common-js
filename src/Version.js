@@ -16,3 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+var Guacamole = Guacamole || {};
+
+/**
+ * The unique ID of this version of the Guacamole JavaScript API. This ID will
+ * be the version string of the guacamole-common-js Maven project, and can be
+ * used in downstream applications as a sanity check that the proper version
+ * of the APIs is being used (in case an older version is cached, for example).
+ *
+ * @type {String}
+ */
+Guacamole.API_VERSION = "1.2.0";

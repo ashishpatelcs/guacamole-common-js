@@ -1,0 +1,25 @@
+{
+  "name": "@ashishpatel/guacamole-common-js",
+  "version": "1.0.0",
+  "description": "Guacamole common js with typescript type definitions",
+  "main": "guacamole.js",
+  "types": "guacamole.d.ts",
+  "scripts": {
+    "build": "node build"
+  },
+  "files": [
+    "LICENSE",
+    "guacamole.js",
+    "guacamole.d.ts",
+    "tsconfig.json"
+  ],
+  "keywords": [
+    "guacamole"
+  ],
+  "author": "Ashish Patel <ashish.tripleclicks@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ashishpatelcs/guacamole-common-js/issues"
+  },
+  "homepage": "https://github.com/ashishpatelcs/guacamole-common-js"
+}

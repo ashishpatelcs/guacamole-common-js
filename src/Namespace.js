@@ -16,3 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+/**
+ * The namespace used by the Guacamole JavaScript API. Absolutely all classes
+ * defined by the Guacamole JavaScript API will be within this namespace.
+ *
+ * @namespace
+ */
+var Guacamole = Guacamole || {};
