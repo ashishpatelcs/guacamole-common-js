@@ -13044,7 +13044,208 @@ Guacamole.StaticHTTPTunnel = function StaticHTTPTunnel(url, crossDomain, extraTu
 
 Guacamole.StaticHTTPTunnel.prototype = new Guacamole.Tunnel();
 
+/**
+ * Guacamole Tunnel implemented over SocketIO
+ *
+ * @constructor
+ * @augments Guacamole.Tunnel
+ * @param {String} tunnelURL The URL of the SocketIO connection
+ * @param {String} tunnelURL The SocketIO event channel to receive and send data
+ */
+Guacamole.SocketIOTunnel = function(tunnelURL, connectionOptions, eventChannel) {
 
+    /**
+     * Reference to this SocketIO tunnel.
+     * @private
+     */
+    var tunnel = this;
+
+    /**
+     * The SocketIO connection used by this tunnel.
+     * @private
+     */
+    var socket = null;
+
+    /**
+     * The current receive timeout ID, if any.
+     * @private
+     */
+    var receive_timeout = null;
+
+    /**
+     * Initiates a timeout which, if data is not received, causes the tunnel
+     * to close with an error.
+     *
+     * @private
+     */
+    function reset_timeout() {
+
+        // Get rid of old timeout (if any)
+        window.clearTimeout(receive_timeout);
+
+        // Set new timeout
+        receive_timeout = window.setTimeout(function () {
+            close_tunnel(new Guacamole.Status(Guacamole.Status.Code.UPSTREAM_TIMEOUT, "Server timeout."));
+        }, tunnel.receiveTimeout);
+
+    }
+
+    /**
+     * Closes this tunnel, signaling the given status and corresponding
+     * message, which will be sent to the onerror handler if the status is
+     * an error status.
+     *
+     * @private
+     * @param {Guacamole.Status} status The status causing the connection to
+     *                                  close;
+     */
+    function close_tunnel(status) {
+
+        // Ignore if already closed
+        if (tunnel.state === Guacamole.Tunnel.State.CLOSED) {
+            return;
+        }
+
+        // If connection closed abnormally, signal error.
+        if (status.code !== Guacamole.Status.Code.SUCCESS && tunnel.onerror) {
+            tunnel.onerror(status);
+        }
+
+        // Mark as closed
+        tunnel.setState(Guacamole.Tunnel.State.CLOSED);
+
+        socket.disconnect();
+
+    }
+
+    this.sendMessage = function(elements) {
+        // Do not attempt to send messages if not connected
+        if (tunnel.state !== Guacamole.Tunnel.State.OPEN)
+            return;
+
+        // Do not attempt to send empty messages
+        if (arguments.length === 0)
+            return;
+
+        /**
+         * Converts the given value to a length/string pair for use as an
+         * element in a Guacamole instruction.
+         *
+         * @private
+         * @param value The value to convert.
+         * @return {String} The converted value.
+         */
+        function getElement(value) {
+            var string = new String(value);
+            return string.length + "." + string;
+        }
+
+        // Initialized message with first element
+        var message = getElement(arguments[0]);
+
+        // Append remaining elements
+        for (var i=1; i<arguments.length; i++)
+            message += "," + getElement(arguments[i]);
+
+        // Final terminator
+        message += ";";
+        socket.emit(eventChannel, message);
+
+    };
+
+    this.connect = function(data) {
+
+        reset_timeout();
+
+        // Mark the tunnel as connecting
+        tunnel.setState(Guacamole.Tunnel.State.CONNECTING);
+        connectionOptions['query'] = data;
+        socket = io(tunnelURL, connectionOptions);
+
+        socket.on('connect', function() {
+            reset_timeout();
+        });
+
+        socket.on('disconnect', function() {
+            close_tunnel(new Guacamole.Status(Guacamole.Status.Code.SERVER_ERROR, "Closed connection"));
+        });
+
+        socket.on(eventChannel, function(message) {
+            reset_timeout();
+            var startIndex = 0;
+            var elementEnd;
+            var elements = [];
+
+            do {
+                // Search for end of length
+                var lengthEnd = message.indexOf(".", startIndex);
+                if (lengthEnd !== -1) {
+                    // Parse length
+                    var length = parseInt(message.substring(elementEnd+1, lengthEnd));
+
+                    // Calculate start of element
+                    startIndex = lengthEnd + 1;
+
+                    // Calculate location of element terminator
+                    elementEnd = startIndex + length;
+                } else {
+                    close_tunnel(new Guacamole.Status(Guacamole.Status.Code.SERVER_ERROR, "Incomplete instruction."));
+                }
+                // We now have enough data for the element. Parse.
+                var element = message.substring(startIndex, elementEnd);
+                var terminator = message.substring(elementEnd, elementEnd+1);
+
+                // Add element to array
+                elements.push(element);
+                // If last element, handle instruction
+                if (terminator === ";") {
+
+                    // Get opcode
+                    var opcode = elements.shift();
+
+                    // Update state and UUID when first instruction received
+                    if (tunnel.state !== Guacamole.Tunnel.State.OPEN) {
+                        // Associate tunnel UUID if received
+                        if (opcode === Guacamole.Tunnel.INTERNAL_DATA_OPCODE)
+                            tunnel.uuid = elements[0];
+
+                        // Tunnel is now open and UUID is available
+                        tunnel.setState(Guacamole.Tunnel.State.OPEN);
+
+                    }
+
+                    // Call instruction handler.
+                    if (opcode !== Guacamole.Tunnel.INTERNAL_DATA_OPCODE && tunnel.oninstruction) {
+                        tunnel.oninstruction(opcode, elements);
+                    }
+
+                    // Clear elements
+                    elements.length = 0;
+
+                }
+
+                // Start searching for length at character after
+                // element terminator
+                startIndex = elementEnd + 1;
+
+            } while (startIndex < message.length);
+        });
+
+        socket.on('error', function(event) {
+            close_tunnel(new Guacamole.Status(Guacamole.Status.Code.SERVER_ERROR, event.data));
+        });
+    };
+
+    this.disconnect = function() {
+        close_tunnel(new Guacamole.Status(Guacamole.Status.Code.SUCCESS, "Manually closed."));
+    };
+
+    this.getSocket = function() {
+        return socket;
+    }
+}
+
+Guacamole.SocketIOTunnel.prototype = new Guacamole.Tunnel();
 
 var Guacamole = Guacamole || {};
 
