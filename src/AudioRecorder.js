@@ -192,9 +192,9 @@ Guacamole.RawAudioRecorder = function RawAudioRecorder(stream, mimetype) {
     // one of the supported legacy methods.
     if (!navigator.mediaDevices.getUserMedia)
         navigator.mediaDevices.getUserMedia = (navigator.getUserMedia
-                || navigator.webkitGetUserMedia
-                || navigator.mozGetUserMedia
-                || navigator.msGetUserMedia).bind(navigator);
+            || navigator.webkitGetUserMedia
+            || navigator.mozGetUserMedia
+            || navigator.msGetUserMedia).bind(navigator);
 
     /**
      * Guacamole.ArrayBufferWriter wrapped around the audio output stream
@@ -412,58 +412,6 @@ Guacamole.RawAudioRecorder = function RawAudioRecorder(stream, mimetype) {
     };
 
     /**
-     * getUserMedia() callback which handles successful retrieval of an
-     * audio stream (successful start of recording).
-     *
-     * @private
-     * @param {MediaStream} stream
-     *     A MediaStream which provides access to audio data read from the
-     *     user's local audio input device.
-     */
-    var streamReceived = function streamReceived(stream) {
-
-        // Create processing node which receives appropriately-sized audio buffers
-        processor = context.createScriptProcessor(BUFFER_SIZE, format.channels, format.channels);
-        processor.connect(context.destination);
-
-        // Send blobs when audio buffers are received
-        processor.onaudioprocess = function processAudio(e) {
-            writer.sendData(toSampleArray(e.inputBuffer).buffer);
-        };
-
-        // Connect processing node to user's audio input source
-        source = context.createMediaStreamSource(stream);
-        source.connect(processor);
-
-        // Attempt to explicitly resume AudioContext, as it may be paused
-        // by default
-        if (context.state === 'suspended')
-            context.resume();
-
-        // Save stream for later cleanup
-        mediaStream = stream;
-
-    };
-
-    /**
-     * getUserMedia() callback which handles audio recording denial. The
-     * underlying Guacamole output stream is closed, and the failure to
-     * record is noted using onerror.
-     *
-     * @private
-     */
-    var streamDenied = function streamDenied() {
-
-        // Simply end stream if audio access is not allowed
-        writer.sendEnd();
-
-        // Notify of closure
-        if (recorder.onerror)
-            recorder.onerror();
-
-    };
-
-    /**
      * Requests access to the user's microphone and begins capturing audio. All
      * received audio data is resampled as necessary and forwarded to the
      * Guacamole stream underlying this Guacamole.RawAudioRecorder. This
@@ -475,14 +423,34 @@ Guacamole.RawAudioRecorder = function RawAudioRecorder(stream, mimetype) {
     var beginAudioCapture = function beginAudioCapture() {
 
         // Attempt to retrieve an audio input stream from the browser
-        var promise = navigator.mediaDevices.getUserMedia({
-            'audio' : true
-        }, streamReceived, streamDenied);
+        navigator.mediaDevices.getUserMedia({ 'audio' : true }, function streamReceived(stream) {
 
-        // Handle stream creation/rejection via Promise for newer versions of
-        // getUserMedia()
-        if (promise && promise.then)
-            promise.then(streamReceived, streamDenied);
+            // Create processing node which receives appropriately-sized audio buffers
+            processor = context.createScriptProcessor(BUFFER_SIZE, format.channels, format.channels);
+            processor.connect(context.destination);
+
+            // Send blobs when audio buffers are received
+            processor.onaudioprocess = function processAudio(e) {
+                writer.sendData(toSampleArray(e.inputBuffer).buffer);
+            };
+
+            // Connect processing node to user's audio input source
+            source = context.createMediaStreamSource(stream);
+            source.connect(processor);
+
+            // Save stream for later cleanup
+            mediaStream = stream;
+
+        }, function streamDenied() {
+
+            // Simply end stream if audio access is not allowed
+            writer.sendEnd();
+
+            // Notify of closure
+            if (recorder.onerror)
+                recorder.onerror();
+
+        });
 
     };
 

@@ -25,12 +25,12 @@ var Guacamole = Guacamole || {};
  * however unlike the canvas element itself, drawing operations on a Layer are
  * guaranteed to run in order, even if such an operation must wait for an image
  * to load before completing.
- * 
+ *
  * @constructor
- * 
+ *
  * @param {Number} width The width of the Layer, in pixels. The canvas element
  *                       backing this Layer will be given this width.
- *                       
+ *
  * @param {Number} height The height of the Layer, in pixels. The canvas element
  *                        backing this Layer will be given this height.
  */
@@ -85,11 +85,11 @@ Guacamole.Layer = function(width, height) {
 
     /**
      * The number of states on the state stack.
-     * 
+     *
      * Note that there will ALWAYS be one element on the stack, but that
      * element is not exposed. It is only used to reset the layer to its
      * initial state.
-     * 
+     *
      * @private
      */
     var stackSize = 0;
@@ -100,20 +100,20 @@ Guacamole.Layer = function(width, height) {
      * @private
      */
     var compositeOperation = {
-     /* 0x0 NOT IMPLEMENTED */
+        /* 0x0 NOT IMPLEMENTED */
         0x1: "destination-in",
         0x2: "destination-out",
-     /* 0x3 NOT IMPLEMENTED */
+        /* 0x3 NOT IMPLEMENTED */
         0x4: "source-in",
-     /* 0x5 NOT IMPLEMENTED */
+        /* 0x5 NOT IMPLEMENTED */
         0x6: "source-atop",
-     /* 0x7 NOT IMPLEMENTED */
+        /* 0x7 NOT IMPLEMENTED */
         0x8: "source-out",
         0x9: "destination-atop",
         0xA: "xor",
         0xB: "destination-over",
         0xC: "copy",
-     /* 0xD NOT IMPLEMENTED */
+        /* 0xD NOT IMPLEMENTED */
         0xE: "source-over",
         0xF: "lighter"
     };
@@ -121,7 +121,7 @@ Guacamole.Layer = function(width, height) {
     /**
      * Resizes the canvas element backing this Layer. This function should only
      * be used internally.
-     * 
+     *
      * @private
      * @param {Number} [newWidth=0]
      *     The new width to assign to this Layer.
@@ -155,8 +155,8 @@ Guacamole.Layer = function(width, height) {
 
                 // Copy image data from current
                 oldDataContext.drawImage(canvas,
-                        0, 0, oldData.width, oldData.height,
-                        0, 0, oldData.width, oldData.height);
+                    0, 0, oldData.width, oldData.height,
+                    0, 0, oldData.width, oldData.height);
 
             }
 
@@ -199,7 +199,7 @@ Guacamole.Layer = function(width, height) {
      * element's coordinate space. This function will only make the canvas
      * larger. If the rectangle already fits within the canvas element's
      * coordinate space, the canvas is left unchanged.
-     * 
+     *
      * @private
      * @param {Number} x The X coordinate of the upper-left corner of the
      *                   rectangle to fit.
@@ -209,11 +209,11 @@ Guacamole.Layer = function(width, height) {
      * @param {Number} h The height of the the rectangle to fit.
      */
     function fitRect(x, y, w, h) {
-        
+
         // Calculate bounds
         var opBoundX = w + x;
         var opBoundY = h + y;
-        
+
         // Determine max width
         var resizeWidth;
         if (opBoundX > layer.width)
@@ -236,19 +236,19 @@ Guacamole.Layer = function(width, height) {
     /**
      * Set to true if this Layer should resize itself to accomodate the
      * dimensions of any drawing operation, and false (the default) otherwise.
-     * 
+     *
      * Note that setting this property takes effect immediately, and thus may
      * take effect on operations that were started in the past but have not
      * yet completed. If you wish the setting of this flag to only modify
      * future operations, you will need to make the setting of this flag an
      * operation with sync().
-     * 
+     *
      * @example
      * // Set autosize to true for all future operations
      * layer.sync(function() {
      *     layer.autosize = true;
      * });
-     * 
+     *
      * @type {Boolean}
      * @default false
      */
@@ -306,7 +306,7 @@ Guacamole.Layer = function(width, height) {
      * Changes the size of this Layer to the given width and height. Resizing
      * is only attempted if the new size provided is actually different from
      * the current size.
-     * 
+     *
      * @param {Number} newWidth The new width to assign to this Layer.
      * @param {Number} newHeight The new height to assign to this Layer.
      */
@@ -318,15 +318,11 @@ Guacamole.Layer = function(width, height) {
     /**
      * Draws the specified image at the given coordinates. The image specified
      * must already be loaded.
-     * 
-     * @param {Number} x
-     *     The destination X coordinate.
      *
-     * @param {Number} y
-     *     The destination Y coordinate.
-     *
-     * @param {CanvasImageSource} image
-     *     The image to draw. Note that this is not a URL.
+     * @param {Number} x The destination X coordinate.
+     * @param {Number} y The destination Y coordinate.
+     * @param {Image} image The image to draw. Note that this is an Image
+     *                      object - not a URL.
      */
     this.drawImage = function(x, y, image) {
         if (layer.autosize) fitRect(x, y, image.width, image.height);
@@ -337,7 +333,7 @@ Guacamole.Layer = function(width, height) {
     /**
      * Transfer a rectangle of image data from one Layer to this Layer using the
      * specified transfer function.
-     * 
+     *
      * @param {Guacamole.Layer} srcLayer The Layer to copy image data from.
      * @param {Number} srcx The X coordinate of the upper-left corner of the
      *                      rectangle within the source Layer's coordinate
@@ -388,7 +384,7 @@ Guacamole.Layer = function(width, height) {
                 src.data[i+2],
                 src.data[i+3]
             );
-                
+
             // Get destination pixel environment
             var dst_pixel = new Guacamole.Layer.Pixel(
                 dst.data[i],
@@ -417,7 +413,7 @@ Guacamole.Layer = function(width, height) {
     /**
      * Put a rectangle of image data from one Layer to this Layer directly
      * without performing any alpha blending. Simply copy the data.
-     * 
+     *
      * @param {Guacamole.Layer} srcLayer The Layer to copy image data from.
      * @param {Number} srcx The X coordinate of the upper-left corner of the
      *                      rectangle within the source Layer's coordinate
@@ -464,7 +460,7 @@ Guacamole.Layer = function(width, height) {
      * operations of the source Layer that were pending at the time this
      * function was called are complete. This operation will not alter the
      * size of the source Layer even if its autosize property is set to true.
-     * 
+     *
      * @param {Guacamole.Layer} srcLayer The Layer to copy image data from.
      * @param {Number} srcx The X coordinate of the upper-left corner of the
      *                      rectangle within the source Layer's coordinate
@@ -504,18 +500,18 @@ Guacamole.Layer = function(width, height) {
 
     /**
      * Starts a new path at the specified point.
-     * 
+     *
      * @param {Number} x The X coordinate of the point to draw.
      * @param {Number} y The Y coordinate of the point to draw.
      */
     this.moveTo = function(x, y) {
-        
+
         // Start a new path if current path is closed
         if (pathClosed) {
             context.beginPath();
             pathClosed = false;
         }
-        
+
         if (layer.autosize) fitRect(x, y, 0, 0);
         context.moveTo(x, y);
 
@@ -523,26 +519,26 @@ Guacamole.Layer = function(width, height) {
 
     /**
      * Add the specified line to the current path.
-     * 
+     *
      * @param {Number} x The X coordinate of the endpoint of the line to draw.
      * @param {Number} y The Y coordinate of the endpoint of the line to draw.
      */
     this.lineTo = function(x, y) {
-        
+
         // Start a new path if current path is closed
         if (pathClosed) {
             context.beginPath();
             pathClosed = false;
         }
-        
+
         if (layer.autosize) fitRect(x, y, 0, 0);
         context.lineTo(x, y);
-        
+
     };
 
     /**
      * Add the specified arc to the current path.
-     * 
+     *
      * @param {Number} x The X coordinate of the center of the circle which
      *                   will contain the arc.
      * @param {Number} y The Y coordinate of the center of the circle which
@@ -554,21 +550,21 @@ Guacamole.Layer = function(width, height) {
      *                           decreasing angle.
      */
     this.arc = function(x, y, radius, startAngle, endAngle, negative) {
-        
+
         // Start a new path if current path is closed
         if (pathClosed) {
             context.beginPath();
             pathClosed = false;
         }
-        
+
         if (layer.autosize) fitRect(x, y, 0, 0);
         context.arc(x, y, radius, startAngle, endAngle, negative);
-        
+
     };
 
     /**
      * Starts a new path at the specified point.
-     * 
+     *
      * @param {Number} cp1x The X coordinate of the first control point.
      * @param {Number} cp1y The Y coordinate of the first control point.
      * @param {Number} cp2x The X coordinate of the second control point.
@@ -577,16 +573,16 @@ Guacamole.Layer = function(width, height) {
      * @param {Number} y The Y coordinate of the endpoint of the curve.
      */
     this.curveTo = function(cp1x, cp1y, cp2x, cp2y, x, y) {
-        
+
         // Start a new path if current path is closed
         if (pathClosed) {
             context.beginPath();
             pathClosed = false;
         }
-        
+
         if (layer.autosize) fitRect(x, y, 0, 0);
         context.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
-        
+
     };
 
     /**
@@ -600,7 +596,7 @@ Guacamole.Layer = function(width, height) {
 
     /**
      * Add the specified rectangle to the current path.
-     * 
+     *
      * @param {Number} x The X coordinate of the upper-left corner of the
      *                   rectangle to draw.
      * @param {Number} y The Y coordinate of the upper-left corner of the
@@ -609,16 +605,16 @@ Guacamole.Layer = function(width, height) {
      * @param {Number} h The height of the rectangle to draw.
      */
     this.rect = function(x, y, w, h) {
-            
+
         // Start a new path if current path is closed
         if (pathClosed) {
             context.beginPath();
             pathClosed = false;
         }
-        
+
         if (layer.autosize) fitRect(x, y, w, h);
         context.rect(x, y, w, h);
-        
+
     };
 
     /**
@@ -642,7 +638,7 @@ Guacamole.Layer = function(width, height) {
      * is implicitly closed. The current path can continue to be reused
      * for other operations (such as clip()) but a new path will be started
      * once a path drawing operation (path() or rect()) is used.
-     * 
+     *
      * @param {String} cap The line cap style. Can be "round", "square",
      *                     or "butt".
      * @param {String} join The line join style. Can be "round", "bevel",
@@ -673,7 +669,7 @@ Guacamole.Layer = function(width, height) {
      * is implicitly closed. The current path can continue to be reused
      * for other operations (such as clip()) but a new path will be started
      * once a path drawing operation (path() or rect()) is used.
-     * 
+     *
      * @param {Number} r The red component of the color to fill.
      * @param {Number} g The green component of the color to fill.
      * @param {Number} b The blue component of the color to fill.
@@ -697,7 +693,7 @@ Guacamole.Layer = function(width, height) {
      * is implicitly closed. The current path can continue to be reused
      * for other operations (such as clip()) but a new path will be started
      * once a path drawing operation (path() or rect()) is used.
-     * 
+     *
      * @param {String} cap The line cap style. Can be "round", "square",
      *                     or "butt".
      * @param {String} join The line join style. Can be "round", "bevel",
@@ -730,13 +726,13 @@ Guacamole.Layer = function(width, height) {
      * is implicitly closed. The current path can continue to be reused
      * for other operations (such as clip()) but a new path will be started
      * once a path drawing operation (path() or rect()) is used.
-     * 
+     *
      * @param {Guacamole.Layer} srcLayer The layer to use as a repeating pattern
      *                                   within the fill.
      */
     this.fillLayer = function(srcLayer) {
 
-        // Fill with image data 
+        // Fill with image data
         context.fillStyle = context.createPattern(
             srcLayer.getCanvas(),
             "repeat"
@@ -798,7 +794,7 @@ Guacamole.Layer = function(width, height) {
     /**
      * Sets the given affine transform (defined with six values from the
      * transform's matrix).
-     * 
+     *
      * @param {Number} a The first value in the affine transform's matrix.
      * @param {Number} b The second value in the affine transform's matrix.
      * @param {Number} c The third value in the affine transform's matrix.
@@ -810,14 +806,14 @@ Guacamole.Layer = function(width, height) {
         context.setTransform(
             a, b, c,
             d, e, f
-          /*0, 0, 1*/
+            /*0, 0, 1*/
         );
     };
 
     /**
      * Applies the given affine transform (defined with six values from the
      * transform's matrix).
-     * 
+     *
      * @param {Number} a The first value in the affine transform's matrix.
      * @param {Number} b The second value in the affine transform's matrix.
      * @param {Number} c The third value in the affine transform's matrix.
@@ -829,19 +825,19 @@ Guacamole.Layer = function(width, height) {
         context.transform(
             a, b, c,
             d, e, f
-          /*0, 0, 1*/
+            /*0, 0, 1*/
         );
     };
 
     /**
      * Sets the channel mask for future operations on this Layer.
-     * 
+     *
      * The channel mask is a Guacamole-specific compositing operation identifier
      * with a single bit representing each of four channels (in order): source
      * image where destination transparent, source where destination opaque,
      * destination where source transparent, and destination where source
      * opaque.
-     * 
+     *
      * @param {Number} mask The channel mask for future operations on this
      *                      Layer.
      */
@@ -854,7 +850,7 @@ Guacamole.Layer = function(width, height) {
      * limit is the maximum ratio of the size of the miter join to the stroke
      * width. If this ratio is exceeded, the miter will not be drawn for that
      * joint of the path.
-     * 
+     *
      * @param {Number} limit The miter limit for stroke operations using the
      *                       miter join.
      */
@@ -945,9 +941,9 @@ Guacamole.Layer.SRC   = 0xC;
 /**
  * Represents a single pixel of image data. All components have a minimum value
  * of 0 and a maximum value of 255.
- * 
+ *
  * @constructor
- * 
+ *
  * @param {Number} r The red component of this pixel.
  * @param {Number} g The green component of this pixel.
  * @param {Number} b The blue component of this pixel.
